@@ -1,6 +1,6 @@
 # Azure FinOps
 
-This solution provides a simplified approach to collecting Azure budget data across all resource groups using a single API call.
+This solution provides a simplified approach to collecting Azure budget data across all resource groups.
 
 ## Problem Statement
 
@@ -23,32 +23,6 @@ When you call the subscription-level Budget API, it returns all budgets regardle
 - Subscription-level budgets
 - Resource group-scoped budgets
 
-The resource group name is embedded in each budget's resource ID, which we extract using pattern matching:
-- `/subscriptions/.../resourceGroups/rg-production/providers/.../budgets/ProdBudget` → **rg-production**
-- `/subscriptions/.../providers/.../budgets/SubBudget` → **(Subscription-level)**
-
-## Data Fields Returned
-
-| Field | Description |
-|-------|-------------|
-| Budget Name | Name of the budget |
-| Resource Group Name | RG name (or "Subscription-level") |
-| Budget Amount | The budget limit amount |
-| Forecast Amount | Forecasted spend for the period |
-| Budget Scope | Full resource ID of the budget |
-| BudgetStartDate | Start date of the budget period |
-| BudgetEndDate | End date of the budget period |
-
-## Why This Approach Is Better
-
-| Aspect | Old Approach (Per-RG Iteration) | New Approach (Single API Call) |
-|--------|--------------------------------|-------------------------------|
-| API Calls | 1 per resource group (could be 100+) | **1 total** |
-| Execution Time | Minutes (depends on RG count) | **Seconds** |
-| Complexity | Requires parallelism, token management | **Simple single request** |
-| Rate Limiting Risk | Higher (many API calls) | **Minimal** |
-| Power BI Compatibility | Requires custom connector or pipeline | **Direct REST query or export to storage** |
-
 ## Usage
 
 ### Prerequisites
@@ -60,16 +34,6 @@ The resource group name is embedded in each budget's resource ID, which we extra
 
 ```powershell
 .\GetBudgetSubLevel.ps1
-```
-
-### Sample Output
-
-```
-BudgetName                ResourceGroup        BudgetAmount ForecastAmount BudgetScope          StartDate  EndDate
-----------                -------------        ------------ -------------- -----------          ---------  -------
-FDPOAzureBudget           (Subscription-level) 3,750.00     1,384.39       Subscription         2024-10-01 2034-10-01
-TestBudget-VM-RG          vm-rg                100.00       -              RG: vm-rg            2026-01-01 2026-12-31
-TestBudget-NetworkWatcher NetworkWatcherRG     50.00        -              RG: NetworkWatcherRG 2026-01-01 2026-12-31
 ```
 
 ### CSV Export
